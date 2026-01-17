@@ -2,7 +2,7 @@
 
 import { GlassPanel } from "@/components/ui/GlassPanel";
 import { Search, Bell, PanelLeftClose, PanelLeftOpen, LogOut } from "lucide-react";
-import { signout } from "@/app/login/actions";
+import { signout } from "@/app/(auth)/login/actions";
 
 interface HeaderProps {
     isLanding?: boolean;
