@@ -12,9 +12,10 @@ interface IntelFeedProps {
     news: NewsArticle[];
     literature: JournalArticle[];
     layer?: DataLayer;
+    onItemSelect?: (item: NewsArticle | JournalArticle) => void;
 }
 
-export function IntelFeed({ news, literature, layer = 'analytical' }: IntelFeedProps) {
+export function IntelFeed({ news, literature, layer = 'analytical', onItemSelect }: IntelFeedProps) {
     const [activeTab, setActiveTab] = useState<'news' | 'science'>('news');
 
     // Filter items based on layer for simplicity (Summary = High impact only)
@@ -52,7 +53,11 @@ export function IntelFeed({ news, literature, layer = 'analytical' }: IntelFeedP
             <div className="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-thin scrollbar-thumb-white/10">
                 {activeTab === 'news' ? (
                     filteredNews.map((item) => (
-                        <div key={item.id} className="group relative pl-4 border-l border-white/10 hover:border-primary transition-colors py-1">
+                        <div
+                            key={item.id}
+                            onClick={() => onItemSelect?.(item)}
+                            className="group relative pl-4 border-l border-white/10 hover:border-primary transition-colors py-1 cursor-pointer"
+                        >
                             {/* Signal Indicator */}
                             <div className={cn(
                                 "absolute -left-[5px] top-2 w-2.5 h-2.5 rounded-full border-2 border-slate-950",
@@ -83,7 +88,11 @@ export function IntelFeed({ news, literature, layer = 'analytical' }: IntelFeedP
                     ))
                 ) : (
                     literature.map((item) => (
-                        <div key={item.id} className="group relative pl-4 border-l border-white/10 hover:border-emerald-500 transition-colors py-1">
+                        <div
+                            key={item.id}
+                            onClick={() => onItemSelect?.(item)}
+                            className="group relative pl-4 border-l border-white/10 hover:border-emerald-500 transition-colors py-1 cursor-pointer"
+                        >
                             <div className="absolute -left-[5px] top-2 w-2.5 h-2.5 rounded-full border-2 border-slate-950 bg-emerald-500" />
 
                             <div className="flex justify-between items-start mb-0.5">
@@ -98,7 +107,7 @@ export function IntelFeed({ news, literature, layer = 'analytical' }: IntelFeedP
                             </h4>
 
                             <div className="flex flex-wrap gap-1 mt-2 opacity-60 group-hover:opacity-100 transition-opacity">
-                                <span className="text-[10px] text-slate-500">— {item.key_findings[0]}</span>
+                                <span className="text-[10px] text-slate-500">— {item.key_findings[0] || "See details"}</span>
                             </div>
                         </div>
                     ))

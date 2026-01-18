@@ -7,6 +7,7 @@ import { GlassPanel } from "@/components/ui/GlassPanel";
 import { CorrelationChart } from "@/components/dashboard/charts/CorrelationChart";
 import { IntelFeed } from "@/components/dashboard/feeds/IntelFeed";
 import { InsightSummary } from "@/components/dashboard/InsightSummary";
+import { IntelDetailSheet } from "@/components/dashboard/IntelDetailSheet";
 import { DataLayerToggle, DataLayer } from "@/components/dashboard/DataLayerToggle";
 import { Activity, Users, AlertTriangle, TrendingUp, Map, FileText } from "lucide-react";
 import * as motion from "framer-motion/client";
@@ -20,17 +21,24 @@ interface AnalysisViewProps {
     literature: JournalArticle[];
     caseTrend: number;
     latestEpi: EpiPoint | undefined;
+    dbInsights?: string[];
 }
 
-export function AnalysisView({ scenario, epidemiology, news, literature, caseTrend, latestEpi }: AnalysisViewProps) {
+export function AnalysisView({ scenario, epidemiology, news, literature, caseTrend, latestEpi, dbInsights }: AnalysisViewProps) {
     const [layer, setLayer] = useState<DataLayer>('analytical');
 
-    // MOCK Generated Insights (In prod, this would come from LLM)
-    const insights = [
-        { text: "ILI cases increased 11% over the last 7 days, signaling accelerated spread.", type: 'negative' },
-        { text: "Highest concentration detected in South Jakarta, correlating with rapid urban transit.", type: 'neutral' },
-        { text: "News volume spike precedes local case reporting by ~48 hours.", type: 'positive' }
-    ] as const;
+    // Use DB insights if available, otherwise fallback to mock (or empty)
+    // Map string array to object with 'type' for UI compatibility
+    const displayInsights = dbInsights && dbInsights.length > 0
+        ? dbInsights.map((text, i) => ({
+            text,
+            type: i === 0 ? 'negative' : i === dbInsights.length - 1 ? 'serious' : 'neutral' // Simple heuristic for MVP visual variety
+        }))
+        : [
+            { text: "System awaiting generated insights...", type: 'neutral' }
+        ];
+
+    const [selectedIntelItem, setSelectedIntelItem] = useState<NewsArticle | JournalArticle | null>(null);
 
     return (
         <motion.div
@@ -39,8 +47,14 @@ export function AnalysisView({ scenario, epidemiology, news, literature, caseTre
             transition={{ duration: 0.5, ease: "easeOut" }}
             className="space-y-6 pb-20 px-2"
         >
+            {/* Sheet for Details */}
+            <IntelDetailSheet
+                item={selectedIntelItem}
+                onClose={() => setSelectedIntelItem(null)}
+            />
+
             {/* Insight Summary - Always Visible */}
-            <InsightSummary points={insights as any} riskLevel="Medium" />
+            <InsightSummary points={displayInsights as any} riskLevel={scenario.status === 'monitoring' ? 'High' : 'Low'} />
 
             {/* Controls Row */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -106,22 +120,33 @@ export function AnalysisView({ scenario, epidemiology, news, literature, caseTre
                                 </div>
                             )}
                         </div>
-                        <div className="flex-1 w-full relative">
-                            {/* In a real implementation pass 'layer' to chart to adjust detail level */}
-                            <CorrelationChart data={epidemiology} newsEvents={news} />
-
-                            {/* Overlay for Summary Mode */}
+                        <div className="flex-1 w-full relative h-[400px] flex flex-col">
+                            {/* Summary Header - Relative positioning only for Summary Layer */}
                             {layer === 'summary' && (
-                                <div className="absolute top-4 left-4 bg-slate-900/90 border border-white/10 p-3 rounded-lg max-w-xs pointer-events-none backdrop-blur-md">
+                                <div className="mb-4 bg-slate-900/50 border-l-2 border-primary p-3 rounded-r-lg">
                                     <p className="text-xs text-slate-300 leading-relaxed">
-                                        <strong className="text-primary">Summary:</strong> Case growth tracks closely with negative news events with a 2-day lag.
+                                        <strong className="text-primary font-medium uppercase tracking-wider text-[10px] block mb-1">Executive Check:</strong> Case growth tracks closely with negative news events (2-day lag).
                                     </p>
                                 </div>
                             )}
 
-                            {/* Overlay for Research Mode */}
+                            {/* Chart Area - Auto-resize */}
+                            {/* Hide Chart in Research Mode if desired, but for MVP keeping it visible is safer unless explicitly asked to hide. User said "Research: show literature panel only". Let's hide chart in Research mode? Strict interpretation creates layout holes. Let's keep chart but maybe different data?
+                               Current decision: Keep chart in all but Research.
+                            */}
+                            {layer !== 'research' ? (
+                                <div className="flex-1 w-full min-h-0">
+                                    <CorrelationChart data={epidemiology} newsEvents={news} />
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-center h-full text-slate-500 text-sm italic">
+                                    Chart disabled in Research View. Focus on Literature.
+                                </div>
+                            )}
+
+                            {/* Research Caption - Kept relative but at bottom */}
                             {layer === 'research' && (
-                                <div className="absolute bottom-4 right-4 bg-slate-900/90 border border-white/10 p-2 rounded text-[10px] text-slate-400 font-mono">
+                                <div className="mt-auto pt-2 bg-slate-900/90 border-t border-white/5 p-2 rounded text-[10px] text-slate-400 font-mono text-center">
                                     Model: SIR-V | Confidence: 87% | Source: MOH + Firecrawl
                                 </div>
                             )}
@@ -141,7 +166,7 @@ export function AnalysisView({ scenario, epidemiology, news, literature, caseTre
                                 <span className="text-[10px] font-mono text-slate-500">LIVE | WEBSOCKET_ACTIVE</span>
                             )}
                         </div>
-                        <IntelFeed news={news} literature={literature} layer={layer} />
+                        <IntelFeed news={news} literature={literature} layer={layer} onItemSelect={setSelectedIntelItem} />
                     </GlassPanel>
                 </BentoItem>
 
@@ -179,12 +204,40 @@ export function AnalysisView({ scenario, epidemiology, news, literature, caseTre
                         </div>
 
                         {/* Map Area */}
-                        <div className="flex-1 w-full pl-6 pt-6 opacity-40 group-hover:opacity-100 transition-opacity duration-500">
-                            {/* Abstract Map visual for MVP */}
-                            <div className="w-full h-full border-l border-t border-indigo-500/20 rounded-tl-3xl relative">
-                                <div className="absolute top-4 left-4 w-3 h-3 bg-indigo-500 rounded-full shadow-[0_0_15px_rgba(99,102,241,0.5)] animate-pulse" />
-                                <div className="absolute top-12 left-20 w-2 h-2 bg-indigo-500/50 rounded-full" />
-                                <div className="absolute top-32 left-10 w-4 h-4 bg-rose-500 rounded-full shadow-[0_0_20px_rgba(244,63,94,0.4)] animate-pulse" />
+                        <div className="flex-1 w-full pl-6 pt-6 opacity-40 group-hover:opacity-100 transition-opacity duration-500 relative">
+                            {/* Abstract Map visual for Jakarta MVP */}
+                            {/* Using specific coordinates % to roughly place Jakarta in an abstract South-East Asian crop */}
+                            <div className="w-full h-full border-l border-t border-indigo-500/20 rounded-tl-3xl relative overflow-hidden">
+
+                                {/* Abstract Landmass Shapes roughly implying Java/Indonesia */}
+                                <div className="absolute top-[40%] left-[10%] w-[80%] h-[15%] bg-indigo-500/10 rotate-[-5deg] rounded-full blur-xl" />
+                                <div className="absolute top-[30%] left-[60%] w-[30%] h-[10%] bg-indigo-500/10 rotate-[10deg] rounded-full blur-xl" />
+
+                                {/* Jakarta Marker */}
+                                <div className="absolute top-[45%] left-[30%] group/marker cursor-help">
+                                    {/* Ripple */}
+                                    <div className="absolute -inset-4 bg-red-500/20 rounded-full animate-ping" />
+                                    <div className="w-4 h-4 bg-red-500 rounded-full shadow-[0_0_20px_rgba(244,63,94,0.6)] animate-pulse relative z-10" />
+
+                                    {/* Tooltip */}
+                                    <div className="absolute left-6 top-0 bg-slate-900 border border-white/10 p-3 rounded-lg w-48 opacity-0 group-hover/marker:opacity-100 transition-opacity z-50 pointer-events-none">
+                                        <h4 className="text-xs font-bold text-white mb-1 uppercase tracking-wider">{scenario.location}</h4>
+                                        <div className="space-y-1">
+                                            <div className="flex justify-between text-[10px]">
+                                                <span className="text-slate-400">Status</span>
+                                                <span className="text-red-400 font-mono uppercase">{scenario.status}</span>
+                                            </div>
+                                            <div className="flex justify-between text-[10px]">
+                                                <span className="text-slate-400">Active Cases</span>
+                                                <span className="text-white font-mono">{latestEpi?.cases.toLocaleString()}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Abstract Other Clusters */}
+                                <div className="absolute top-[38%] left-[70%] w-2 h-2 bg-indigo-500/30 rounded-full" />
+                                <div className="absolute top-[55%] left-[50%] w-1.5 h-1.5 bg-indigo-500/30 rounded-full" />
                             </div>
                         </div>
                     </GlassPanel>

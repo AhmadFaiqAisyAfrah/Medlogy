@@ -16,8 +16,8 @@ import { usePathname } from "next/navigation";
 
 const navItems = [
     { icon: Activity, label: "Analysis", href: "/analysis" },
-    { icon: Newspaper, label: "Intel Feed", href: "/intel" },
-    { icon: Workflow, label: "Simulations", href: "/sims" },
+    { icon: Newspaper, label: "Intel Feed", href: "/intel-feed" },
+    { icon: Workflow, label: "Scenario Explorer", href: "#" }, // Disabled for MVP
     { icon: BookOpen, label: "Syntheses", href: "/reports" },
 ];
 
@@ -40,8 +40,9 @@ export function Sidebar() {
 
                 {/* Navigation */}
                 <nav className="flex-1 space-y-1 px-2">
-                    {navItems.filter(item => ["Analysis", "Intel Feed", "Simulations"].includes(item.label)).map((item) => {
+                    {navItems.filter(item => ["Analysis", "Intel Feed", "Scenario Explorer"].includes(item.label)).map((item) => {
                         const isActive = pathname === item.href;
+                        const isDisabled = item.href === "#";
                         return (
                             <Link
                                 key={item.label}
@@ -50,7 +51,9 @@ export function Sidebar() {
                                     "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all group",
                                     isActive
                                         ? "bg-primary/10 text-primary border border-primary/20"
-                                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                                        : isDisabled
+                                            ? "text-slate-600 cursor-not-allowed"
+                                            : "text-slate-400 hover:text-white hover:bg-white/5"
                                 )}
                             >
                                 <item.icon size={18} className={cn("group-hover:scale-110 transition-transform", isActive && "animate-pulse")} />
