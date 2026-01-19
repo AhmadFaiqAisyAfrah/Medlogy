@@ -6,8 +6,9 @@ import Link from "next/link";
 import { BrandCharacter } from "@/components/brand/BrandCharacter";
 import { HeroAnimation } from "@/components/brand/HeroAnimation";
 import { TypewriterEffect } from "@/components/ui/TypewriterEffect";
-import { SearchBar } from "@/components/dashboard/SearchBar";
 import { motion, useScroll, useTransform } from "framer-motion";
+
+import { Header } from "@/components/layout/Header";
 
 export default function Home() {
     const { scrollY } = useScroll();
@@ -16,6 +17,9 @@ export default function Home() {
 
     return (
         <div className="space-y-20 pb-20 overflow-x-hidden font-sans">
+            {/* Landing Header */}
+            <Header isLanding={true} />
+
             {/* Scroll Progress / Affordance */}
             <motion.div
                 className="fixed right-6 top-1/2 -translate-y-1/2 w-1 h-24 bg-white/10 rounded-full z-50 hidden md:block"
@@ -57,11 +61,6 @@ export default function Home() {
                             Real-time surveillance, predictive modeling, and verified signal synthesis.
                         </p>
 
-                        {/* Search Bar - Aligned Left */}
-                        <div className="w-full max-w-md pt-2">
-                            <SearchBar />
-                        </div>
-
                         <div className="flex flex-wrap items-center gap-4 pt-4 w-full justify-center lg:justify-start">
                             <Link href="/analysis">
                                 <motion.button
@@ -69,17 +68,21 @@ export default function Home() {
                                     whileTap={{ scale: 0.95 }}
                                     className="bg-primary text-white font-semibold px-8 py-4 rounded-2xl shadow-[0_0_40px_rgba(14,165,233,0.3)] hover:shadow-[0_0_60px_rgba(14,165,233,0.5)] transition-all flex items-center gap-2 group"
                                 >
-                                    Launch App
+                                    📊 Analytics
                                     <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                                 </motion.button>
                             </Link>
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                className="px-8 py-4 rounded-2xl border border-white/10 hover:bg-white/5 text-white transition-all font-semibold flex items-center gap-2"
-                            >
-                                Documentation
-                            </motion.button>
+
+                            <Link href="/global-health-news">
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    className="px-8 py-4 rounded-2xl border border-white/10 hover:bg-white/5 text-white transition-all font-semibold flex items-center gap-2"
+                                >
+                                    <Globe size={20} className="text-emerald-400" />
+                                    Global News
+                                </motion.button>
+                            </Link>
                         </div>
                     </div>
 
@@ -224,10 +227,30 @@ export default function Home() {
 
                     <Link href="/analysis" className="inline-block relative z-10">
                         <button className="bg-white text-slate-950 px-8 py-4 rounded-xl font-bold text-lg hover:bg-slate-200 transition-colors flex items-center gap-2 mx-auto">
-                            Enter Dashboard
-                            <ArrowRight size={20} />
+                            📊 Analytics →
                         </button>
                     </Link>
+                </div>
+            </motion.section>
+
+            {/* Donation Section */}
+            <motion.section
+                className="py-12 relative z-10"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+            >
+                <div className="max-w-xl mx-auto text-center px-6">
+                    <div className="p-8 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm">
+                        <span className="text-3xl mb-4 block">☕</span>
+                        <h3 className="text-2xl font-bold text-white mb-3">Support the Developer</h3>
+                        <p className="text-slate-400 mb-6">
+                            Medlogy is an independent open-source initiative. Your support helps keep the servers running and the intelligence flowing.
+                        </p>
+                        <button className="px-6 py-3 rounded-xl bg-amber-500 text-slate-900 font-bold hover:bg-amber-400 transition-colors">
+                            Buy Me a Coffee
+                        </button>
+                    </div>
                 </div>
             </motion.section>
         </div>

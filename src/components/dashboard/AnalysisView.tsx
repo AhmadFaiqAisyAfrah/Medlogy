@@ -9,11 +9,13 @@ import { IntelFeed } from "@/components/dashboard/feeds/IntelFeed";
 import { InsightSummary } from "@/components/dashboard/InsightSummary";
 import { IntelDetailSheet } from "@/components/dashboard/IntelDetailSheet";
 import { DataLayerToggle, DataLayer } from "@/components/dashboard/DataLayerToggle";
-import { Activity, Users, AlertTriangle, TrendingUp, Map, FileText } from "lucide-react";
+import { Activity, Users, AlertTriangle, TrendingUp, Map, FileText, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { NewsArticle, JournalArticle, EpiPoint, OutbreakScenario, PolicyStatus } from '@/lib/types';
 import { cn } from "@/lib/utils";
 import { PolicyPanel } from "@/components/dashboard/PolicyPanel";
+import { AiPromptInput } from "@/components/ui/AiPromptInput";
+import { explainAnalytics } from "@/app/(platform)/analysis/actions";
 
 interface AnalysisViewProps {
     scenario: OutbreakScenario;
@@ -41,6 +43,35 @@ export function AnalysisView({ scenario, epidemiology, news, literature, caseTre
         ];
 
     const [selectedIntelItem, setSelectedIntelItem] = useState<NewsArticle | JournalArticle | null>(null);
+
+    // AI State
+    const [isAiLoading, setIsAiLoading] = useState(false);
+    const [aiResponse, setAiResponse] = useState<string | null>(null);
+    const [lastQuery, setLastQuery] = useState("");
+
+    const handleAiQuery = async (query: string) => {
+        setIsAiLoading(true);
+        setLastQuery(query);
+        setAiResponse(null);
+
+        try {
+            // Calling Server Action
+            const result = await explainAnalytics(query, scenario.scenarioId); // Assuming scenarioId might be outbreakId prefix or we should pass specific ID if we had it. 
+            // Note: explainAnalytics logic currently handles finding outbreak by region_id or active. 
+            // Better to update explainAnalytics to accept outbreakId if we have it, or just query string.
+            // For MVP this is fine.
+
+            if (result.success) {
+                setAiResponse(result.message || "Explanation generated.");
+            } else {
+                setAiResponse("I'm sorry, I couldn't generate an explanation at this time. " + result.message);
+            }
+        } catch (e) {
+            setAiResponse("An error occurred while contacting the intelligence engine.");
+        } finally {
+            setIsAiLoading(false);
+        }
+    };
 
     return (
         <motion.div
@@ -232,7 +263,44 @@ export function AnalysisView({ scenario, epidemiology, news, literature, caseTre
                     </GlassPanel>
                 </BentoItem>
 
+
+
+
             </BentoGrid>
+
+            {/* AI Prompt Input */}
+            <div className="pt-8 pb-4 space-y-4 max-w-3xl mx-auto">
+                <AiPromptInput
+                    placeholder="Ask analytical questions about this scenario (Gemini Powered)..."
+                    onSearch={handleAiQuery}
+                    isLoading={isAiLoading}
+                />
+
+                {/* AI Response Area */}
+                {aiResponse && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-slate-900/80 border border-primary/20 rounded-xl p-6 relative overflow-hidden"
+                    >
+                        <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-primary to-transparent" />
+
+                        <div className="flex items-start gap-3 mb-2">
+                            <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                                <Sparkles size={16} />
+                            </div>
+                            <p className="text-xs font-mono text-primary/80 mt-1">MEDLOGY INTELLIGENCE</p>
+                        </div>
+
+                        <div className="pl-10 space-y-4">
+                            <p className="text-sm font-medium text-slate-300 italic">"{lastQuery}"</p>
+                            <p className="text-slate-100 leading-relaxed whitespace-pre-line">
+                                {aiResponse}
+                            </p>
+                        </div>
+                    </motion.div>
+                )}
+            </div>
         </motion.div >
     );
 }

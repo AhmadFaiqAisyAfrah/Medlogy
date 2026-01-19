@@ -123,6 +123,11 @@ export interface Database {
                 Insert: Omit<PolicyStatus, 'id' | 'generated_at'>;
                 Update: Partial<Omit<PolicyStatus, 'id' | 'generated_at'>>;
             };
+            public_news_feed: {
+                Row: PublicNewsItem;
+                Insert: Omit<PublicNewsItem, 'id' | 'created_at' | 'updated_at'>;
+                Update: Partial<Omit<PublicNewsItem, 'id' | 'created_at' | 'updated_at'>>;
+            };
         };
         Views: {
             signal_metrics: {
@@ -130,6 +135,21 @@ export interface Database {
             };
         };
     };
+}
+
+export interface PublicNewsItem {
+    id: string;
+    title: string;
+    url: string;
+    source: 'WHO' | 'CDC' | 'ECDC';
+    published_at: string;
+    original_snippet: string | null;
+    ai_headline: string | null;
+    ai_summary: string | null;
+    ai_why_this_matters: string | null;
+    ai_processed: boolean;
+    created_at: string;
+    updated_at: string;
 }
 
 // Frontend Adapters (for compatibility with UI components)

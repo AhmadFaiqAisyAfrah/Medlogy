@@ -9,16 +9,19 @@ import {
     BookOpen,
     Settings,
     MoreVertical,
-    Workflow
+    Workflow,
+    Coffee
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navItems = [
+    { icon: LayoutDashboard, label: "Overview", href: "/" },
     { icon: Activity, label: "Analysis", href: "/analysis" },
-    { icon: Newspaper, label: "Intel Feed", href: "/intel-feed" },
-    { icon: Workflow, label: "Scenario Explorer", href: "#" }, // Disabled for MVP
+    { icon: Newspaper, label: "Global Health News", href: "/global-health-news" },
     { icon: BookOpen, label: "Syntheses", href: "/reports" },
+    { icon: Workflow, label: "Scenario Explorer", href: "#" }, // Disabled for MVP
+    { icon: Coffee, label: "Buy Me a Coffee", href: "/support" }
 ];
 
 export function Sidebar() {
@@ -40,7 +43,7 @@ export function Sidebar() {
 
                 {/* Navigation */}
                 <nav className="flex-1 space-y-1 px-2">
-                    {navItems.filter(item => ["Analysis", "Intel Feed", "Scenario Explorer"].includes(item.label)).map((item) => {
+                    {navItems.map((item) => {
                         const isActive = pathname === item.href;
                         const isDisabled = item.href === "#";
                         return (

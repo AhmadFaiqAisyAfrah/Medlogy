@@ -28,6 +28,7 @@ export async function signup(formData: FormData) {
     const email = formData.get('email') as string
     const password = formData.get('password') as string
     const full_name = formData.get('full_name') as string
+    const display_name = formData.get('display_name') as string
     const organization = formData.get('organization') as string
     const role = formData.get('role') as string
     const country = formData.get('country') as string
@@ -40,6 +41,7 @@ export async function signup(formData: FormData) {
             // We pass data here mainly for metadata, but we will insert into profiles explicitly
             data: {
                 full_name,
+                display_name,
                 organization,
                 role,
                 country
@@ -85,6 +87,7 @@ export async function signup(formData: FormData) {
             const { error: profileError } = await supabase.from('profiles').insert({
                 id: authData.user.id,
                 full_name,
+                display_name,
                 organization,
                 role,
                 country
@@ -117,5 +120,5 @@ export async function signout() {
     const supabase = await createClient()
     await supabase.auth.signOut()
     revalidatePath('/', 'layout')
-    redirect('/login')
+    redirect('/')
 }

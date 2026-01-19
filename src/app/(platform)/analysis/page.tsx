@@ -23,7 +23,8 @@ interface AnalysisPageProps {
 export default async function AnalysisPage({ searchParams }: AnalysisPageProps) {
     // 0. Fetch Active Regions
     const regions = await getActiveRegions();
-    const regionId = searchParams.region || (regions.length > 0 ? regions[0].id : undefined);
+    const defaultRegion = regions.find(r => r.name === 'Jakarta') || regions[0];
+    const regionId = searchParams.region || (defaultRegion ? defaultRegion.id : undefined);
 
     // 1. Fetch Outbreak (MVP: Get active outbreak for the selected region)
     // If no regionId found, it will try to fetch ANY active outbreak, which is fine as fallback.

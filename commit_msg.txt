@@ -1,8 +1,0 @@
-feat(policy): add deterministic policy dashboard and stabilize build
-
-- Fix blocking build errors (framer-motion, client components, TS)
-- Freeze Phase 2 (multi-region, scheduler, enrichment)
-- Implement deterministic Policy Matrix (Operational Status)
-- Add policy_status schema and data layer
-- Integrate Policy Panel into Analysis dashboard
-- Verify logic with unit tests (matrix.test.ts)

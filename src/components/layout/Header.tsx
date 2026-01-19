@@ -1,8 +1,10 @@
 "use client";
 
 import { GlassPanel } from "@/components/ui/GlassPanel";
-import { Search, Bell, PanelLeftClose, PanelLeftOpen, LogOut } from "lucide-react";
-import { signout } from "@/app/(auth)/login/actions";
+import { Search, Bell, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { UserNav } from "@/components/layout/UserNav";
 
 interface HeaderProps {
     isLanding?: boolean;
@@ -11,6 +13,18 @@ interface HeaderProps {
 }
 
 export function Header({ isLanding = false, toggleSidebar, isSidebarOpen = true }: HeaderProps) {
+    const [user, setUser] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const checkUser = async () => {
+            const supabase = createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+            setUser(user);
+            setLoading(false);
+        };
+        checkUser();
+    }, []);
 
     // LANDING MODE HEADER
     if (isLanding) {
@@ -20,9 +34,15 @@ export function Header({ isLanding = false, toggleSidebar, isSidebarOpen = true 
                     <span className="font-bold text-white text-xl tracking-tighter">Medlogy</span>
                 </div>
                 <div className="pointer-events-auto flex items-center gap-4">
-                    <a href="/login" className="px-6 py-2.5 rounded-full bg-primary hover:bg-primary/90 text-white text-sm font-semibold shadow-[0_0_20px_rgba(14,165,233,0.3)] hover:shadow-[0_0_30px_rgba(14,165,233,0.5)] transition-all">
-                        Login
-                    </a>
+                    {!loading && (
+                        user ? (
+                            <UserNav />
+                        ) : (
+                            <a href="/login" className="px-6 py-2.5 rounded-full bg-primary hover:bg-primary/90 text-white text-sm font-semibold shadow-[0_0_20px_rgba(14,165,233,0.3)] hover:shadow-[0_0_30px_rgba(14,165,233,0.5)] transition-all">
+                                Login
+                            </a>
+                        )
+                    )}
                 </div>
             </header>
         );
@@ -41,18 +61,8 @@ export function Header({ isLanding = false, toggleSidebar, isSidebarOpen = true 
                         {isSidebarOpen ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
                     </button>
 
-                    {/* Search */}
-                    <div className="relative max-w-md w-full hidden md:block">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
-                        <input
-                            type="text"
-                            placeholder="Search outbreak ID, region, or keyword..."
-                            className="w-full bg-slate-900/50 border border-white/5 rounded-xl py-2 pl-10 pr-4 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
-                        />
-                        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 px-1.5 py-1 rounded bg-white/5 border border-white/5">
-                            <span className="text-[10px] text-slate-500 font-mono">⌘ K</span>
-                        </div>
-                    </div>
+                    {/* Search - Only show if logged in or public news? Let's keep it but maybe hide if pure landing... wait this is App Mode */}
+
                 </div>
 
                 <div className="flex items-center gap-4">
@@ -63,25 +73,24 @@ export function Header({ isLanding = false, toggleSidebar, isSidebarOpen = true 
                         <span className="text-[10px] font-bold text-emerald-500 animate-pulse">LIVE</span>
                     </div>
 
-                    {/* Notifications */}
-                    <button className="relative p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors">
-                        <Bell size={20} />
-                        <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-red-500 border border-slate-900" />
-                    </button>
+                    {!loading && (
+                        user ? (
+                            <>
+                                {/* Notifications */}
+                                <button className="relative p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors">
+                                    <Bell size={20} />
+                                    <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-red-500 border border-slate-900" />
+                                </button>
 
-                    {/* Sign Out Button */}
-                    <form action={signout}>
-                        <button
-                            type="submit"
-                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-colors text-sm font-medium"
-                        >
-                            <LogOut size={16} />
-                            <span className="hidden sm:inline">Sign Out</span>
-                        </button>
-                    </form>
-
-                    {/* Profile Placeholder */}
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 border-2 border-slate-900" />
+                                {/* User Dropdown */}
+                                <UserNav />
+                            </>
+                        ) : (
+                            <a href="/login" className="px-5 py-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary hover:text-primary/80 border border-primary/20 transition-all text-sm font-medium">
+                                Login to Access Platform
+                            </a>
+                        )
+                    )}
                 </div>
             </GlassPanel>
         </header>

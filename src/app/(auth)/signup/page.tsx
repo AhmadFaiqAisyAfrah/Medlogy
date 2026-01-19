@@ -22,10 +22,16 @@ export default function SignupPage({
                     )}
 
                     <form className="space-y-4">
+                        {/* Display Name (Nickname) */}
+                        <div>
+                            <label htmlFor="display_name" className="block text-sm font-medium text-zinc-300 mb-1.5">Display Name (Nickname)</label>
+                            <input id="display_name" name="display_name" type="text" required className="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all" placeholder="Dr. Jane" />
+                        </div>
+
                         {/* Full Name */}
                         <div>
                             <label htmlFor="full_name" className="block text-sm font-medium text-zinc-300 mb-1.5">Full Name</label>
-                            <input id="full_name" name="full_name" type="text" required className="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all" placeholder="Dr. Jane Doe" />
+                            <input id="full_name" name="full_name" type="text" required className="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all" placeholder="Jane Doe" />
                         </div>
 
                         {/* Email */}
