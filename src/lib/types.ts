@@ -1,6 +1,17 @@
 // DB Types matching Supabase Schema
+export interface Region {
+    id: string;
+    name: string;
+    country: string;
+    lat: number;
+    lon: number;
+    active: boolean;
+    created_at: string;
+}
+
 export interface Outbreak {
     id: string;
+    region_id: string;
     title: string;
     pathogen: string;
     location_country: string;
@@ -54,10 +65,34 @@ export interface InsightSummary {
     generated_at: string;
 }
 
+export interface SignalMetric {
+    outbreak_id: string;
+    date: string;
+    daily_news_count: number;
+    source_diversity_count: number;
+    severity_score: number;
+    last_updated: string;
+}
+
+export interface PolicyStatus {
+    id: string;
+    outbreak_id: string;
+    monitoring_level: 'routine' | 'enhanced' | 'active_response';
+    advisory_code: 'green' | 'yellow' | 'orange' | 'red';
+    generated_at: string;
+    reasoning: string;
+    recommended_actions: string[]; // JSONB array
+}
+
 // Supabase Database Type Wrapper
 export interface Database {
     public: {
         Tables: {
+            regions: {
+                Row: Region;
+                Insert: Omit<Region, 'id' | 'created_at'>;
+                Update: Partial<Omit<Region, 'id' | 'created_at'>>;
+            };
             outbreaks: {
                 Row: Outbreak;
                 Insert: Omit<Outbreak, 'id' | 'created_at'>;
@@ -82,6 +117,16 @@ export interface Database {
                 Row: InsightSummary;
                 Insert: Omit<InsightSummary, 'id' | 'created_at'>;
                 Update: Partial<Omit<InsightSummary, 'id' | 'created_at'>>;
+            };
+            policy_status: {
+                Row: PolicyStatus;
+                Insert: Omit<PolicyStatus, 'id' | 'generated_at'>;
+                Update: Partial<Omit<PolicyStatus, 'id' | 'generated_at'>>;
+            };
+        };
+        Views: {
+            signal_metrics: {
+                Row: SignalMetric;
             };
         };
     };

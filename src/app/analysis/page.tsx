@@ -1,5 +1,6 @@
 
 import { AnalysisView } from "@/components/dashboard/AnalysisView";
+import { RegionSelector } from "@/components/dashboard/RegionSelector";
 import { Activity, Map, FileText } from "lucide-react";
 import { NewsArticle, JournalArticle, EpiPoint, OutbreakScenario } from '@/lib/types';
 import {
@@ -7,16 +8,39 @@ import {
     getOutbreakTimeseries,
     getNewsSignals,
     getResearchSources,
-    getInsightSummary
+    getInsightSummary,
+    getActiveRegions,
+    getPolicyStatus,
+    CaseTimeSeriesRecord,
+    NewsSignalRecord,
+    ResearchSourceRecord
 } from "@/lib/data";
 
-export default async function AnalysisPage() {
-    // 1. Fetch Outbreak (MVP: Get the most recent one)
-    const outbreak = await getActiveOutbreak();
+interface AnalysisPageProps {
+    searchParams: { region?: string };
+}
+
+export default async function AnalysisPage({ searchParams }: AnalysisPageProps) {
+    // 0. Fetch Active Regions
+    const regions = await getActiveRegions();
+    const regionId = searchParams.region || (regions.length > 0 ? regions[0].id : undefined);
+
+    // 1. Fetch Outbreak (MVP: Get active outbreak for the selected region)
+    // If no regionId found, it will try to fetch ANY active outbreak, which is fine as fallback.
+    const outbreak = await getActiveOutbreak(regionId);
 
     if (!outbreak) {
-        // Fallback or graceful error
-        return <div className="p-8 text-white">Loading Intelligence Data... (Ensure Database is Seeded)</div>;
+        return (
+            <div className="p-8 text-white flex flex-col items-center justify-center min-h-[400px] space-y-4">
+                <div className="w-full max-w-md flex justify-end">
+                    <RegionSelector regions={regions} activeRegionId={regionId || ""} />
+                </div>
+                <div className="text-center space-y-2">
+                    <p className="text-xl font-semibold">No Active Outbreak Data</p>
+                    <p className="text-slate-400">No outbreak has been registered for this region yet.</p>
+                </div>
+            </div>
+        );
     }
 
     // 2. Fetch Related Data concurrently
@@ -24,18 +48,20 @@ export default async function AnalysisPage() {
         timeSeries,
         newsData,
         researchData,
-        insightData
+        insightData,
+        policyData
     ] = await Promise.all([
         getOutbreakTimeseries(outbreak.id),
         getNewsSignals(outbreak.id),
         getResearchSources(outbreak.id),
-        getInsightSummary(outbreak.id)
+        getInsightSummary(outbreak.id),
+        getPolicyStatus(outbreak.id)
     ]);
 
     // 3. Transform Data to UI Interfaces
 
     // Map Epidemiology
-    const epidemiology: EpiPoint[] = (timeSeries || []).map((ts) => ({
+    const epidemiology: EpiPoint[] = (timeSeries || []).map((ts: CaseTimeSeriesRecord) => ({
         date: ts.date,
         cases: ts.active_cases,
         deaths: ts.critical > 5 ? Math.floor(ts.critical * 0.2) : 0, // Inferred for MVP visualization
@@ -45,7 +71,7 @@ export default async function AnalysisPage() {
     }));
 
     // Map News
-    const news: NewsArticle[] = (newsData || []).map((n) => ({
+    const news: NewsArticle[] = (newsData || []).map((n: NewsSignalRecord) => ({
         id: n.id,
         date: new Date(n.published_at).toISOString().split('T')[0],
         source: n.source,
@@ -57,7 +83,7 @@ export default async function AnalysisPage() {
     }));
 
     // Map Literature
-    const literature: JournalArticle[] = (researchData || []).map((r) => ({
+    const literature: JournalArticle[] = (researchData || []).map((r: ResearchSourceRecord) => ({
         id: r.id,
         title: r.title,
         journal: r.journal || "Unknown Journal",
@@ -74,7 +100,7 @@ export default async function AnalysisPage() {
         scenarioId: outbreak.id.slice(0, 8).toUpperCase(),
         name: outbreak.title,
         startDate: outbreak.start_date,
-        location: `${outbreak.location_city}, ${outbreak.location_country}`,
+        location: `${outbreak.location_city || outbreak.location_country}`, // Using city or country if city missing
         pathogen: {
             name: outbreak.pathogen,
             strain: "Variant H3N2", // Derived from string in real app
@@ -102,6 +128,7 @@ export default async function AnalysisPage() {
                             ACTIVE SURVEILLANCE
                         </span>
                         <span className="text-xs font-mono text-slate-500">ID: {scenario.scenarioId}</span>
+                        {/* Region Selector Mobile/Inline if needed, but placing on right is cleaner */}
                     </div>
                     <div className="flex items-baseline gap-4">
                         <h1 className="text-3xl font-bold tracking-tight text-white">{scenario.name}</h1>
@@ -116,9 +143,11 @@ export default async function AnalysisPage() {
                     </div>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex gap-3 items-center">
+                    <RegionSelector regions={regions} activeRegionId={regionId || regions[0]?.id} />
+
                     <button className="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
-                        <FileText size={16} /> Export Report
+                        <FileText size={16} /> Export
                     </button>
                     <span className="px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm font-bold animate-pulse flex items-center gap-2">
                         <div className="w-2 h-2 bg-red-500 rounded-full animate-ping" />
@@ -138,6 +167,7 @@ export default async function AnalysisPage() {
                 // AnalysisView currently mocks insights internally on line 29. 
                 // We should pass them as prop to use real data.
                 dbInsights={insightData ? insightData.summary_points as string[] : undefined}
+                policyStatus={policyData}
             />
         </div>
     );

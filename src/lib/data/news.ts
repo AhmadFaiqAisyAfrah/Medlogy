@@ -24,3 +24,25 @@ export async function getNewsSignals(outbreakId: string): Promise<NewsSignalReco
 
     return data;
 }
+
+export type SignalMetricRecord = Database['public']['Views']['signal_metrics']['Row'];
+
+/**
+ * Fetches signal metrics for an outbreak.
+ */
+export async function getSignalMetrics(outbreakId: string): Promise<SignalMetricRecord[]> {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+        .from('signal_metrics')
+        .select('*')
+        .eq('outbreak_id', outbreakId)
+        .order('date', { ascending: true });
+
+    if (error) {
+        console.error('Error fetching signal metrics:', error);
+        return [];
+    }
+
+    return data;
+}

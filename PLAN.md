@@ -8,18 +8,22 @@
    - Implement Strict Read-Only Data Service Layer (`src/lib/data`).
    - Abstract Supabase queries from UI components.
    - Separate "Outbreaks", "News", "Research", "Insights" domains.
-3. **Phase 2: Functional Core & Intelligence** (In Progress)
-   - [x] Insight Automation (Rule-based Engine).
-   - [ ] Real-time data ingestion.
-   - [ ] User profile and settings.
+3. **Phase 2: Scale & Context** (Completed)
+   - Multi-Region Support (Jakarta/Bali).
+   - Cron Scheduler for Ingestion.
+   - Data Enrichment (Signal Metrics).
+4. **Phase 3: Policy & Decision Support** (In Progress)
+   - **Objective**: Translate observations into standardized Operational Status signals.
+   - **Key System**: Deterministic Policy Matrix (Input -> SOP Match -> Output).
+   - **Constraint**: No generative AI for decisions; strict rule-based logic.
 
 ## Current Trajectory
-**Focus**: Intelligence Automation & Guardrails.
-**Goal**: Lock in deterministic analysis logic before scaling.
-**Status**: Insight Engine IMPLEMENTED & LOCKED.
+**Focus**: Decision Support & Policy Bridges.
+**Goal**: Implement "Operational Status" dashboard.
+**Status**: Architecture Approved. Implementation Started.
 
 ## Squad Status
 | Agent | Task | Status |
 | :--- | :--- | :--- |
-| **Antigravity** | Insight Automation Engine & Logic | **Completed** |
+| **Antigravity** | Phase 3: Policy Dashboard | **Executing** |
 | **The Nerd** | Quality Control & Testing | **Standing By** |

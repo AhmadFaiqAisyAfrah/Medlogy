@@ -10,9 +10,10 @@ import { InsightSummary } from "@/components/dashboard/InsightSummary";
 import { IntelDetailSheet } from "@/components/dashboard/IntelDetailSheet";
 import { DataLayerToggle, DataLayer } from "@/components/dashboard/DataLayerToggle";
 import { Activity, Users, AlertTriangle, TrendingUp, Map, FileText } from "lucide-react";
-import * as motion from "framer-motion/client";
-import { NewsArticle, JournalArticle, EpiPoint, OutbreakScenario } from '@/lib/types';
+import { motion } from "framer-motion";
+import { NewsArticle, JournalArticle, EpiPoint, OutbreakScenario, PolicyStatus } from '@/lib/types';
 import { cn } from "@/lib/utils";
+import { PolicyPanel } from "@/components/dashboard/PolicyPanel";
 
 interface AnalysisViewProps {
     scenario: OutbreakScenario;
@@ -22,9 +23,10 @@ interface AnalysisViewProps {
     caseTrend: number;
     latestEpi: EpiPoint | undefined;
     dbInsights?: string[];
+    policyStatus?: PolicyStatus | null;
 }
 
-export function AnalysisView({ scenario, epidemiology, news, literature, caseTrend, latestEpi, dbInsights }: AnalysisViewProps) {
+export function AnalysisView({ scenario, epidemiology, news, literature, caseTrend, latestEpi, dbInsights, policyStatus }: AnalysisViewProps) {
     const [layer, setLayer] = useState<DataLayer>('analytical');
 
     // Use DB insights if available, otherwise fallback to mock (or empty)
@@ -86,23 +88,10 @@ export function AnalysisView({ scenario, epidemiology, news, literature, caseTre
                         minimal={layer === 'summary'}
                     />
                 </BentoItem>
-                <BentoItem colSpan={1}>
-                    <StatCard
-                        label="Critical Alerts"
-                        value={news.filter(n => n.sentiment === 'negative').length}
-                        icon={AlertTriangle}
-                        className={cn("bg-red-950/10 border-red-500/20", layer === 'summary' && "opacity-80 grayscale-[0.3]")}
-                        minimal={layer === 'summary'}
-                    />
-                </BentoItem>
-                <BentoItem colSpan={1}>
-                    <StatCard
-                        label="Monitoring Units"
-                        value="142"
-                        icon={Users}
-                        className={cn("bg-slate-950/40 border-white/10", layer === 'summary' && "opacity-80 grayscale-[0.3]")}
-                        minimal={layer === 'summary'}
-                    />
+
+                {/* Policy Panel - Replaces Critical Alerts & Monitoring Units for Phase 3 */}
+                <BentoItem colSpan={2}>
+                    <PolicyPanel status={policyStatus || null} />
                 </BentoItem>
 
                 {/* Main Chart */}
@@ -244,6 +233,6 @@ export function AnalysisView({ scenario, epidemiology, news, literature, caseTre
                 </BentoItem>
 
             </BentoGrid>
-        </motion.div>
+        </motion.div >
     );
 }

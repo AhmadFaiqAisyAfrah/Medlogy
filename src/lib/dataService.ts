@@ -1,4 +1,6 @@
-import { EpiPoint, JournalArticle, NewsArticle, Scenario, IntelligenceReport } from './types';
+import { EpiPoint, JournalArticle, NewsArticle, Scenario } from './types';
+
+export type IntelligenceReport = any;
 
 declare const process: any;
 

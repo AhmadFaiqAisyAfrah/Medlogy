@@ -32,12 +32,12 @@ export async function saveInsightSummary(outbreakId: string, insight: GeneratedI
     // 2. Insert new summary
     const { error: insertError } = await supabase
         .from('insight_summaries')
-        .insert({
+        .upsert({
             outbreak_id: outbreakId,
-            summary_points: insight.summary_points, // Supabase handles string[] -> jsonb
+            summary_points: insight.summary_points,
             confidence_level: insight.confidence_level,
             generated_at: insight.generated_at
-        });
+        } as any);
 
     if (insertError) {
         console.error("Failed to insert new insight", insertError);

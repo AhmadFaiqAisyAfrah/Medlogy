@@ -1,5 +1,5 @@
-import { IntelFeedView } from "./IntelFeedView";
 import { getActiveOutbreak, getNewsSignals } from "@/lib/data";
+import { IntelFeedView } from "./IntelFeedView";
 
 export const dynamic = 'force-dynamic';
 
@@ -14,7 +14,8 @@ export default async function IntelFeedPage() {
         );
     }
 
-    const news = await getNewsSignals(outbreak.id);
+    // Fetch raw data using the outbreak ID
+    const newsData = await getNewsSignals(outbreak.id);
 
-    return <IntelFeedView outbreak={outbreak} news={news} />;
+    return <IntelFeedView outbreak={outbreak} news={newsData as any || []} />;
 }

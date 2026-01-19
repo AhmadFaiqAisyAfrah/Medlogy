@@ -1,4 +1,4 @@
-import { OutbreakRecord, CaseTimeSeriesRecord, NewsSignalRecord, ResearchSourceRecord } from "@/lib/data";
+import { OutbreakRecord, CaseTimeSeriesRecord, NewsSignalRecord, ResearchSourceRecord, SignalMetricRecord } from "@/lib/data";
 import { calculateCaseTrend, analyzeNewsSentiment, calculateConfidenceScore } from "./rules";
 
 export interface GeneratedInsight {
@@ -15,7 +15,8 @@ export function generateInsightBullets(
     outbreak: OutbreakRecord,
     timeseries: CaseTimeSeriesRecord[],
     news: NewsSignalRecord[],
-    research: ResearchSourceRecord[]
+    research: ResearchSourceRecord[],
+    metrics: SignalMetricRecord[] = []
 ): GeneratedInsight {
     const bullets: string[] = [];
 
@@ -46,6 +47,14 @@ export function generateInsightBullets(
         }
     } else {
         bullets.push(`No significant media signals detected in the configured surveillance window.`);
+    }
+
+    // 3b. Generate Enrichment Bullet (Volume/Diversity)
+    if (metrics.length > 0) {
+        const totalVolume = metrics.reduce((acc, m) => acc + m.daily_news_count, 0);
+        const dayCount = metrics.length;
+        const avgDaily = Math.round(totalVolume / dayCount);
+        bullets.push(`Enrichment data indicates an average of ${avgDaily} related news signals per day over the observed period.`);
     }
 
     // 4. Generate Research/Risk Bullet
