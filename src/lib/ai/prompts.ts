@@ -24,6 +24,33 @@ Output JSON Schema:
 }
 `;
 
+export const CLASSIFY_INTENT_PROMPT = (query: string) => `
+You are an intent classification engine.
+DO NOT answer the user's question.
+RESPOND ONLY WITH VALID JSON.
+Do NOT include explanations, markdown, or natural language.
+If unsure, return GENERAL_OBSERVATION.
+
+User Query: "${query}"
+
+Goal: Classify intent and extract detailed parameters.
+
+Intents:
+1. "GENERAL_OBSERVATION": User asks high-level questions (What is Dengue? Global news? Definitions). NO specific analysis requested.
+2. "MISSING_SCOPE": User asks for analysis/trends/data but lacks a specific Region or Topic. (e.g. "Show me trends", "Is flu rising?", "Analyze cases").
+    - CRITICAL: You must NEVER assume a default region.
+    - If user says "Analyze ILI" without a location -> Intent is MISSING_SCOPE.
+3. "GENERATE_ANALYSIS": User specifies BOTH Topic AND Region. (e.g. "Show Dengue in Jakarta", "Analyze COVID in Indonesia").
+    - Also applies if user provides specific context implying region (e.g. "Flu in Java").
+
+Output JSON Schema:
+{
+    "intent": "GENERAL_OBSERVATION" | "MISSING_SCOPE" | "GENERATE_ANALYSIS",
+    "topic": string | null,
+    "region": string | null
+}
+`;
+
 export const INSIGHT_EXPLANATION_PROMPT = (metrics: any) => `
 You are a data analyst for a dashboard. Explain the following key metrics observed in the data.
 Context: Public Health Surveillance.
