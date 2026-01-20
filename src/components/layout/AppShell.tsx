@@ -3,7 +3,6 @@
 
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
-import { AIAgent } from "@/components/layout/AIAgent";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -43,10 +42,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </main>
             </div>
 
-            {/* AI Agent - Visible in App Mode */}
-            <AnimatePresence>
-                <AIAgent />
-            </AnimatePresence>
+
 
         </div>
     );

@@ -1,4 +1,4 @@
-
+import { AnalysisChat } from "@/components/analysis/AnalysisChat";
 import { AnalysisView } from "@/components/dashboard/AnalysisView";
 import { RegionSelector } from "@/components/dashboard/RegionSelector";
 import { Activity, Map, FileText } from "lucide-react";
@@ -15,12 +15,43 @@ import {
     NewsSignalRecord,
     ResearchSourceRecord
 } from "@/lib/data";
+import { getConversations, getConversation } from "@/app/actions/conversation";
 
 interface AnalysisPageProps {
-    searchParams: { region?: string };
+    searchParams: {
+        region?: string;
+        mode?: string; // 'dashboard' or undefined
+        id?: string;
+    };
 }
 
 export default async function AnalysisPage({ searchParams }: AnalysisPageProps) {
+    const isDashboardMode = searchParams.mode === 'dashboard';
+
+    // STATE 1: AI Entry (Default)
+    if (!isDashboardMode) {
+        const conversations = await getConversations('analysis');
+        let initialMessages: any[] = [];
+        let initialId: string | undefined = undefined;
+
+        if (searchParams.id) {
+            const activeConv = await getConversation(searchParams.id);
+            if (activeConv) {
+                initialMessages = activeConv.messages;
+                initialId = activeConv.id;
+            }
+        }
+
+        return (
+            <AnalysisChat
+                initialConversations={conversations}
+                initialMessages={initialMessages}
+                initialId={initialId}
+            />
+        );
+    }
+
+    // STATE 2: Dashboard Mode (Fetch Data)
     // 0. Fetch Active Regions
     const regions = await getActiveRegions();
     const defaultRegion = regions.find(r => r.name === 'Jakarta') || regions[0];
@@ -40,6 +71,12 @@ export default async function AnalysisPage({ searchParams }: AnalysisPageProps) 
                     <p className="text-xl font-semibold">No Active Outbreak Data</p>
                     <p className="text-slate-400">No outbreak has been registered for this region yet.</p>
                 </div>
+                {/* Fallback to chat, passing empty/default props since we are in error state */}
+                <AnalysisChat
+                    initialConversations={await getConversations('analysis')}
+                    initialMessages={[]}
+                    initialId={undefined}
+                />
             </div>
         );
     }

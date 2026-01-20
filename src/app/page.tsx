@@ -68,7 +68,7 @@ export default function Home() {
                                     whileTap={{ scale: 0.95 }}
                                     className="bg-primary text-white font-semibold px-8 py-4 rounded-2xl shadow-[0_0_40px_rgba(14,165,233,0.3)] hover:shadow-[0_0_60px_rgba(14,165,233,0.5)] transition-all flex items-center gap-2 group"
                                 >
-                                    📊 Analytics
+                                    📊 Analysis
                                     <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                                 </motion.button>
                             </Link>
@@ -225,11 +225,19 @@ export default function Home() {
                         Log in to explore real-time health intelligence, outbreak analysis, and verified epidemiological insights.
                     </p>
 
-                    <Link href="/analysis" className="inline-block relative z-10">
-                        <button className="bg-white text-slate-950 px-8 py-4 rounded-xl font-bold text-lg hover:bg-slate-200 transition-colors flex items-center gap-2 mx-auto">
-                            📊 Analytics →
-                        </button>
-                    </Link>
+                    <div className="flex flex-wrap gap-4 justify-center relative z-10">
+                        <Link href="/analysis">
+                            <button className="bg-white text-slate-950 px-8 py-4 rounded-xl font-bold text-lg hover:bg-slate-200 transition-colors flex items-center gap-2">
+                                📊 Analysis →
+                            </button>
+                        </Link>
+                        <Link href="/global-health-news">
+                            <button className="px-8 py-4 rounded-xl border border-white/10 hover:bg-white/5 text-white transition-all font-semibold flex items-center gap-2">
+                                <Globe size={20} className="text-emerald-400" />
+                                Global News
+                            </button>
+                        </Link>
+                    </div>
                 </div>
             </motion.section>
 
@@ -247,9 +255,11 @@ export default function Home() {
                         <p className="text-slate-400 mb-6">
                             Medlogy is an independent open-source initiative. Your support helps keep the servers running and the intelligence flowing.
                         </p>
-                        <button className="px-6 py-3 rounded-xl bg-amber-500 text-slate-900 font-bold hover:bg-amber-400 transition-colors">
-                            Buy Me a Coffee
-                        </button>
+                        <Link href="/support">
+                            <button className="px-6 py-3 rounded-xl bg-amber-500 text-slate-900 font-bold hover:bg-amber-400 transition-colors">
+                                Buy Me a Coffee
+                            </button>
+                        </Link>
                     </div>
                 </div>
             </motion.section>

@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { Database } from '@/lib/types';
-import { generateText } from '@/lib/ai/gemini';
+import { generateAIResponse } from '@/lib/ai/groq';
 import { INSIGHT_EXPLANATION_PROMPT } from '@/lib/ai/prompts';
 import { validateAiOutput } from '@/lib/ai/safety';
 
@@ -56,7 +56,15 @@ export async function getInsightSummary(outbreakId: string): Promise<InsightSumm
         };
 
         const prompt = INSIGHT_EXPLANATION_PROMPT(context);
-        const rawText = await generateText(prompt, { temperature: 0.2 });
+
+        // Pass to Groq (which expects conversation history)
+        // We wrap the prompt as a user message.
+        const result = await generateAIResponse([
+            { role: "system", content: "You are an expert epidemiologist. Summarize insights in bullet points." },
+            { role: "user", content: prompt }
+        ]);
+
+        const rawText = result.content;
 
         // Parse bullets (assuming AI returns text with newlines or bullets)
         const summaryPoints = rawText
@@ -68,7 +76,12 @@ export async function getInsightSummary(outbreakId: string): Promise<InsightSumm
         const validPoints = summaryPoints.filter(p => validateAiOutput(p).valid);
 
         if (validPoints.length === 0) {
-            throw new Error("No safe insight points generated.");
+            // If parsing failed (maybe strict JSON returned just a paragraph), just use the whole text as one point if valid
+            if (validateAiOutput(rawText).valid) {
+                validPoints.push(rawText);
+            } else {
+                throw new Error("No safe insight points generated.");
+            }
         }
 
         // Save to DB
@@ -93,3 +106,5 @@ export async function getInsightSummary(outbreakId: string): Promise<InsightSumm
         return existing || null;
     }
 }
+
+

@@ -10,10 +10,21 @@ interface AiPromptInputProps {
     className?: string;
     onSearch?: (query: string) => void;
     isLoading?: boolean;
+    defaultValue?: string;
 }
 
-export function AiPromptInput({ placeholder = "Ask Medlogy Intelligence...", className, onSearch, isLoading }: AiPromptInputProps) {
-    const [input, setInput] = useState("");
+export function AiPromptInput({
+    placeholder = "Ask Medlogy Intelligence...",
+    className,
+    onSearch,
+    isLoading,
+    defaultValue = ""
+}: AiPromptInputProps) {
+    const [input, setInput] = useState(defaultValue);
+
+    // Update input processing if defaultValue changes externally (optional, but good for navigation)
+    // For now, simple initial state is enough for the search box
+
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     const handleSearch = () => {
